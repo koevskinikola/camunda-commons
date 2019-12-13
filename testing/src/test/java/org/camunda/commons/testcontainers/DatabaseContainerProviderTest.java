@@ -18,19 +18,33 @@ package org.camunda.commons.testcontainers;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import org.camunda.commons.testconainers.ProvidedDatabaseHelper;
+import java.util.Arrays;
+import java.util.Collection;
+
+import org.camunda.commons.testconainers.DatabaseContainerProvider;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.Parameterized;
 
-public class ProvidedDatabaseHelperTest {
+@RunWith(Parameterized.class)
+public class DatabaseContainerProviderTest {
+
+  @Parameterized.Parameters(name = "{0} engine")
+  public static Collection<Object[]> data() {
+    return Arrays.asList(new Object[][] {
+        {}, {}
+    });
+  }
 
   // given
-  protected static ProvidedDatabaseHelper databaseHelper = new ProvidedDatabaseHelper("mariadb");
+  protected static DatabaseContainerProvider databaseHelper = new DatabaseContainerProvider("mariadb");
+  protected static String containerId;
 
-  @BeforeClass
-  public static void setUp() {
+  @Before
+  public void setUp() {
     // when
     databaseHelper.startDatabase();
   }
@@ -40,10 +54,12 @@ public class ProvidedDatabaseHelperTest {
     // then
     assertThat(databaseHelper.getDbContainer()).isNotNull();
     assertThat(databaseHelper.getJdbcUrl()).contains("mariadb");
+
+    if (containerId != null) {
+      assertThat(databaseHelper.getDbContainer().getContainerId()).isEqualTo(containerId);
+    } else {
+      containerId = databaseHelper.getDbContainer().getContainerId();
+    }
   }
 
-  @AfterClass
-  public static void tearDown() {
-    databaseHelper.stopDatabase();
-  }
 }

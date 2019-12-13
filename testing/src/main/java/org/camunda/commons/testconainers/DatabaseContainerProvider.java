@@ -25,16 +25,27 @@ import org.testcontainers.containers.OracleContainer;
 import org.testcontainers.containers.PostgreSQLContainer;
 import org.testcontainers.utility.TestcontainersConfiguration;
 
-public class ProvidedDatabaseHelper {
+public class DatabaseContainerProvider {
 
-  protected JdbcDatabaseContainer dbContainer;
+  protected static JdbcDatabaseContainer dbContainer;
 
-  public ProvidedDatabaseHelper() {
-    dbContainer = createDbContainer(null);
+  static {
+    Runtime.getRuntime().addShutdownHook(new Thread("Testcontainers cleanup") {
+      @Override
+      public void run() {
+        DatabaseContainerProvider.dbContainer.stop();
+      }
+    });
   }
 
-  public ProvidedDatabaseHelper(String databaseType) {
-    dbContainer = createDbContainer(databaseType);
+  public DatabaseContainerProvider() {
+    this(null);
+  }
+
+  public DatabaseContainerProvider(String databaseType) {
+    if (dbContainer == null) {
+      dbContainer = createDbContainer(databaseType);
+    }
   }
 
   protected JdbcDatabaseContainer createDbContainer(String dbName) {
@@ -74,18 +85,15 @@ public class ProvidedDatabaseHelper {
       dbContainer.withUsername(username)
                  .withPassword(password);
     }
+
+    // enable when it's properly working
+    // dbContainer.withReuse(true);
   }
 
   public void startDatabase() {
     if (dbContainer != null) {
       configureDbContainer();
       dbContainer.start();
-    }
-  }
-
-  public void stopDatabase() {
-    if (dbContainer != null) {
-      dbContainer.stop();
     }
   }
 
