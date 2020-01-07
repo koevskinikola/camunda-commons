@@ -57,7 +57,7 @@ public class DatabaseContainerProvider {
     switch (dbName) {
       case "mysql":
         return new MySQLContainer(dbImageName);
-      case "postgresql":
+      case "postgres":
         return new PostgreSQLContainer(dbImageName);
       case "mariadb":
         return new MariaDBContainer(dbImageName);
@@ -73,6 +73,9 @@ public class DatabaseContainerProvider {
   }
 
   protected void configureDbContainer() {
+    String name = TestcontainersConfiguration.getInstance()
+        .getProperties()
+        .getProperty("db.name");
     String username = TestcontainersConfiguration.getInstance()
         .getProperties()
         .getProperty("db.username");
@@ -81,8 +84,9 @@ public class DatabaseContainerProvider {
         .getProperty("db.password");
 
     // JdbcContainer conf
-    if (username != null && password != null) {
-      dbContainer.withUsername(username)
+    if (name != null && username != null && password != null) {
+      dbContainer.withDatabaseName(name)
+                 .withUsername(username)
                  .withPassword(password);
     }
 

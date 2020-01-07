@@ -36,7 +36,7 @@ public class DatabaseImageResolver {
     switch (databaseType) {
       case "mysql":
         return getInstance().resolveMySQLImageName();
-      case "postgresql":
+      case "postgres":
         return getInstance().resolvePostgreSQLImageName();
       case "mariadb":
         return getInstance().resolveMariaDbImageName();
