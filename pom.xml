@@ -23,7 +23,7 @@
   <properties>
     <license.includeTransitiveDependencies>false</license.includeTransitiveDependencies>
     <additionalparam>-Xdoclint:none</additionalparam>
-    <version.testcontainers>1.12.3</version.testcontainers>
+    <version.testcontainers>1.12.5</version.testcontainers>
     <version.mariadb>1.1.8</version.mariadb>
   </properties>
 
