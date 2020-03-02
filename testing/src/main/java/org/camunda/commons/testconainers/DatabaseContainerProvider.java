@@ -43,18 +43,17 @@ public class DatabaseContainerProvider {
   }
 
   public DatabaseContainerProvider(String databaseType) {
+    // use singleton pattern for container creation
     if (dbContainer == null) {
       dbContainer = createDbContainer(databaseType);
     }
   }
 
-  protected JdbcDatabaseContainer createDbContainer(String dbName) {
-    dbName = (dbName != null)? dbName : TestcontainersConfiguration.getInstance()
-        .getProperties()
-        .getProperty("db.image");
+  protected JdbcDatabaseContainer createDbContainer(String databaseType) {
+    databaseType = (databaseType != null)? databaseType : DatabaseImageResolver.getDatabaseType();
+    String dbImageName = DatabaseImageResolver.getDockerImageNameForType(databaseType);
 
-    String dbImageName = DatabaseImageResolver.getDatabaseImageForType(dbName);
-    switch (dbName) {
+    switch (databaseType) {
       case "mysql":
         return new MySQLContainer(dbImageName);
       case "postgres":

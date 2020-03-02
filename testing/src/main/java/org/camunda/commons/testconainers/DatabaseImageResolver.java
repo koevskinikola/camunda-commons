@@ -16,10 +16,14 @@
  */
 package org.camunda.commons.testconainers;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import org.testcontainers.utility.TestcontainersConfiguration;
 
 public class DatabaseImageResolver {
 
+  protected static final Map<String, String> DEFAULT_IMAGES =  new HashMap<>(6);
   protected static final String DEFAULT_MYSQL_IMAGE = "mysql:5.7.22";
   protected static final String DEFAULT_MARIADB_IMAGE = "mariadb:10.3.6";
   protected static final String DEFAULT_POSTGRESQL_IMAGE = "postgres:9.6.12";
@@ -27,52 +31,36 @@ public class DatabaseImageResolver {
   protected static final String DEFAULT_DB2_IMAGE = "ibmcom/db2:11.5.0.0a";
   protected static final String DEFAULT_ORACLE_IMAGE = "registry.camunda.com/camunda-ci-oracle:18";
 
-  protected static final DatabaseImageResolver INSTANCE = new DatabaseImageResolver();
-
-  DatabaseImageResolver() {
+  static {
+    DEFAULT_IMAGES.put("mysql", DEFAULT_MYSQL_IMAGE);
+    DEFAULT_IMAGES.put("mariadb", DEFAULT_MARIADB_IMAGE);
+    DEFAULT_IMAGES.put("postgres", DEFAULT_POSTGRESQL_IMAGE);
+    DEFAULT_IMAGES.put("mssql", DEFAULT_MSSQL_IMAGE);
+    DEFAULT_IMAGES.put("oracle", DEFAULT_ORACLE_IMAGE);
+    DEFAULT_IMAGES.put("db2", DEFAULT_DB2_IMAGE);
   }
 
-  public static String getDatabaseImageForType(String databaseType) {
-    switch (databaseType) {
-      case "mysql":
-        return getInstance().resolveMySQLImageName();
-      case "postgres":
-        return getInstance().resolvePostgreSQLImageName();
-      case "mariadb":
-        return getInstance().resolveMariaDbImageName();
-      case "mssql":
-        return getInstance().resolveMsSqlImageName();
-      case "db2":
-        return getInstance().resolveDb2DbImageName();
-      case "oracle":
-        return getInstance().resolveOracleDbImageName();
-      default:
-        return null;
+  protected static final DatabaseImageResolver INSTANCE = new DatabaseImageResolver();
+
+  private DatabaseImageResolver() {
+  }
+
+  public static String getDockerImageNameForType(String databaseType) {
+    if (DEFAULT_IMAGES.containsKey(databaseType)) {
+      return TestcontainersConfiguration
+          .getInstance()
+          .getProperties()
+          .getProperty(databaseType + ".container.image", DEFAULT_IMAGES.get(databaseType));
+    } else {
+      return null;
     }
   }
 
-  public String resolveMySQLImageName() {
-    return TestcontainersConfiguration.getInstance().getProperties().getProperty("mysql.container.image", DEFAULT_MYSQL_IMAGE);
-  }
-
-  public String resolveMariaDbImageName() {
-    return TestcontainersConfiguration.getInstance().getProperties().getProperty("mariadb.container.image", DEFAULT_MARIADB_IMAGE);
-  }
-
-  public String resolvePostgreSQLImageName() {
-    return TestcontainersConfiguration.getInstance().getProperties().getProperty("postgresql.container.image", DEFAULT_POSTGRESQL_IMAGE);
-  }
-
-  public String resolveOracleDbImageName() {
-    return TestcontainersConfiguration.getInstance().getProperties().getProperty("oracle.container.image", DEFAULT_ORACLE_IMAGE);
-  }
-
-  public String resolveMsSqlImageName() {
-    return TestcontainersConfiguration.getInstance().getProperties().getProperty("mssql.container.image", DEFAULT_MSSQL_IMAGE);
-  }
-
-  public String resolveDb2DbImageName() {
-    return TestcontainersConfiguration.getInstance().getProperties().getProperty("db2.container.image", DEFAULT_DB2_IMAGE);
+  public static String getDatabaseType() {
+    return TestcontainersConfiguration
+        .getInstance()
+        .getProperties()
+        .getProperty("db.image");
   }
 
   public static DatabaseImageResolver getInstance() {
