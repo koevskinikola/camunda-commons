@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.camunda.commons.testconainers;
+package org.camunda.commons.testcontainers;
 
 import org.testcontainers.containers.Db2Container;
 import org.testcontainers.containers.JdbcDatabaseContainer;
