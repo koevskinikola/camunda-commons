@@ -107,4 +107,8 @@ public class DatabaseContainerProvider {
   public JdbcDatabaseContainer getDbContainer() {
     return dbContainer;
   }
+
+  public boolean isDbContainerAvailable() {
+    return dbContainer != null && dbContainer.isRunning();
+  }
 }
