@@ -23,13 +23,14 @@ import org.testcontainers.utility.TestcontainersConfiguration;
 
 public class DatabaseImageResolver {
 
-  protected static final Map<String, String> DEFAULT_IMAGES =  new HashMap<>(6);
+  protected static final Map<String, String> DEFAULT_IMAGES =  new HashMap<>(7);
   protected static final String DEFAULT_MYSQL_IMAGE = "mysql:5.7.22";
   protected static final String DEFAULT_MARIADB_IMAGE = "mariadb:10.3.6";
   protected static final String DEFAULT_POSTGRESQL_IMAGE = "postgres:9.6.12";
   protected static final String DEFAULT_MSSQL_IMAGE = "mcr.microsoft.com/mssql/server:2017-CU12";
   protected static final String DEFAULT_DB2_IMAGE = "ibmcom/db2:11.5.0.0a";
   protected static final String DEFAULT_ORACLE_IMAGE = "registry.camunda.com/camunda-ci-oracle:18";
+  protected static final String DEFAULT_CRDB_IMAGE = "cockroachdb/cockroach:v20.1.3";
 
   static {
     DEFAULT_IMAGES.put("mysql", DEFAULT_MYSQL_IMAGE);
@@ -38,6 +39,7 @@ public class DatabaseImageResolver {
     DEFAULT_IMAGES.put("mssql", DEFAULT_MSSQL_IMAGE);
     DEFAULT_IMAGES.put("oracle", DEFAULT_ORACLE_IMAGE);
     DEFAULT_IMAGES.put("db2", DEFAULT_DB2_IMAGE);
+    DEFAULT_IMAGES.put("cockroachdb", DEFAULT_CRDB_IMAGE);
   }
 
   protected static final DatabaseImageResolver INSTANCE = new DatabaseImageResolver();
@@ -50,7 +52,7 @@ public class DatabaseImageResolver {
       return TestcontainersConfiguration
           .getInstance()
           .getProperties()
-          .getProperty(databaseType + ".container.image", DEFAULT_IMAGES.get(databaseType));
+          .getProperty("db.container.image", DEFAULT_IMAGES.get(databaseType));
     } else {
       return null;
     }
@@ -60,7 +62,7 @@ public class DatabaseImageResolver {
     return TestcontainersConfiguration
         .getInstance()
         .getProperties()
-        .getProperty("db.image");
+        .getProperty("db.type");
   }
 
   public static DatabaseImageResolver getInstance() {

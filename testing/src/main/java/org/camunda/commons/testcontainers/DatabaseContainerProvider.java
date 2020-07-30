@@ -16,6 +16,7 @@
  */
 package org.camunda.commons.testcontainers;
 
+import org.testcontainers.containers.CockroachContainer;
 import org.testcontainers.containers.Db2Container;
 import org.testcontainers.containers.JdbcDatabaseContainer;
 import org.testcontainers.containers.MSSQLServerContainer;
@@ -66,6 +67,8 @@ public class DatabaseContainerProvider {
         return new Db2Container(dbImageName);
       case "oracle":
         return new OracleContainer(dbImageName);
+      case "cockroachdb":
+        return new CockroachContainer(dbImageName);
       default:
         return null;
     }
