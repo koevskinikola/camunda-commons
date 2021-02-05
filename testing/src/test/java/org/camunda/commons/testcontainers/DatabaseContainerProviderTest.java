@@ -17,46 +17,154 @@
 package org.camunda.commons.testcontainers;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.fail;
 
-import java.util.Arrays;
-import java.util.Collection;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 
-import org.junit.Before;
 import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
 
-@RunWith(Parameterized.class)
+/**
+ * This test should not be run on our CI, as it requires a Docker-in-Docker image to runs succesfully.
+ */
 public class DatabaseContainerProviderTest {
 
-  @Parameterized.Parameters(name = "{0} engine")
-  public static Collection<Object[]> data() {
-    return Arrays.asList(new Object[][] {
-        {}, {}
-    });
-  }
-
-  // given
-  protected static DatabaseContainerProvider databaseHelper = new DatabaseContainerProvider("mariadb");
-  protected static String containerId;
-
-  @Before
-  public void setUp() {
-    // when
-    databaseHelper.startDatabase();
-  }
-
+  /**
+   * The current Camunda PostgreSQL images are not compatible with Testcontainers. However,
+   * the default Testcontainers PostgreSQL image can be used.
+   */
   @Test
-  public void testDbSetup() {
-    // then
-    assertThat(databaseHelper.getDbContainer()).isNotNull();
-    assertThat(databaseHelper.getJdbcUrl()).contains("mariadb");
-
-    if (containerId != null) {
-      assertThat(databaseHelper.getDbContainer().getContainerId()).isEqualTo(containerId);
-    } else {
-      containerId = databaseHelper.getDbContainer().getContainerId();
+  public void testPostgresJdbcTestcontainersUrl() {
+    // when
+    try (Connection connection = DriverManager.getConnection("jdbc:tc:campostgresql:9.6:///testDb")) {
+      connection.setAutoCommit(false);
+      ResultSet rs = connection.prepareStatement("SELECT version();").executeQuery();
+      if (rs.next()) {
+        // then
+        String version = rs.getString(1);
+        assertThat(version).contains("9.6");
+      }
+    } catch (SQLException throwables) {
+      fail("Testcontainers failed to spin up a Docker container: " + throwables.getMessage());
     }
   }
 
+  /**
+   * The current Camunda MariaDB images are compatible with Testcontainers (just a bit slow).
+   * The username and password need to be explicitly declared.
+   */
+  @Test
+  public void testMariaDBJdbcTestcontainersUrl() {
+    // when
+    try (Connection connection = DriverManager.getConnection("jdbc:tc:cammariadb:10.0://localhost:3306/process-engine?user=camunda&password=camunda")) {
+      connection.setAutoCommit(false);
+      ResultSet rs = connection.prepareStatement("SELECT version();").executeQuery();
+      if (rs.next()) {
+        // then
+        String version = rs.getString(1);
+        assertThat(version).contains("10.0");
+      }
+    } catch (SQLException throwables) {
+      fail("Testcontainers failed to spin up a Docker container: " + throwables.getMessage());
+    }
+  }
+
+  /**
+   * The current Camunda MariaDB images are compatible with Testcontainers (just a bit slow).
+   * The username and password need to be explicitly declared.
+   */
+  @Test
+  public void testMySQLJdbcTestcontainersUrl() {
+    // when
+    try (Connection connection = DriverManager.getConnection("jdbc:tc:cammysql:5.7://localhost:3306/process-engine?user=camunda&password=camunda")) {
+      connection.setAutoCommit(false);
+      ResultSet rs = connection.prepareStatement("SELECT version();").executeQuery();
+      if (rs.next()) {
+        // then
+        String version = rs.getString(1);
+        assertThat(version).contains("5.7");
+      }
+    } catch (SQLException throwables) {
+      fail("Testcontainers failed to spin up a Docker container: " + throwables.getMessage());
+    }
+  }
+
+  /**
+   * The current Camunda CockroachDB images are compatible with Testcontainers.
+   * The username and password are the CRDB defaults.
+   */
+  @Test
+  public void testCockroachDBJdbcTestcontainersUrl() {
+    // when
+    try (Connection connection = DriverManager.getConnection("jdbc:tc:camcockroachdb:20.1.3://localhost/postgres?user=root&password=")) {
+      connection.setAutoCommit(false);
+      ResultSet rs = connection.prepareStatement("SELECT version();").executeQuery();
+      if (rs.next()) {
+        // then
+        String version = rs.getString(1);
+        assertThat(version).contains("20.1.3");
+      }
+    } catch (SQLException throwables) {
+      fail("Testcontainers failed to spin up a Docker container: " + throwables.getMessage());
+    }
+  }
+
+  /**
+   * The current Camunda SqlServer images are not compatible with Testcontainers.
+   * New (publicly available) Docker images can be used, if the TS Isolation is set correctly.
+   */
+  @Test
+  public void testSqlServerJdbcTestcontainersUrl() {
+    // when
+    try (Connection connection = DriverManager.getConnection("jdbc:tc:camsqlserver:2017-CU12:///testDb")) {
+      connection.setAutoCommit(false);
+      ResultSet rs = connection.prepareStatement("SELECT @@VERSION").executeQuery();
+      if (rs.next()) {
+        // then
+        String version = rs.getString(1);
+        assertThat(version).contains("2017");
+      }
+    } catch (SQLException throwables) {
+      fail("Testcontainers failed to spin up a Docker container: " + throwables.getMessage());
+    }
+  }
+
+  /**
+   * The current Camunda SqlServer images are not compatible with Testcontainers.
+   * New (publicly available) Docker images can be used, if the TS Isolation is set correctly.
+   */
+  @Test
+  public void testDb2JdbcTestcontainersUrl() {
+    // when
+    try (Connection connection = DriverManager.getConnection("jdbc:tc:camdb2:11.1:///engine?user=camunda&password=camunda")) {
+      connection.setAutoCommit(false);
+      ResultSet rs = connection.prepareStatement("SELECT * FROM SYSIBMADM.ENV_INST_INFO;").executeQuery();
+      if (rs.next()) {
+        // then
+        String version = rs.getString(1);
+        assertThat(version).contains("11.1");
+      }
+    } catch (SQLException throwables) {
+      fail("Testcontainers failed to spin up a Docker container: " + throwables.getMessage());
+    }
+  }
+
+  /**
+   * The current Camunda SqlServer images are not compatible with Testcontainers.
+   * New (publicly available) Docker images can be used, if the TS Isolation is set correctly.
+   */
+  @Test
+  public void testOracleJdbcTestcontainersUrl() throws SQLException {
+    // when
+    Connection connection = DriverManager.getConnection("jdbc:tc:camoracle:thin:@localhost:1521:xe?user=camunda&password=camunda");
+    connection.setAutoCommit(false);
+    ResultSet rs = connection.prepareStatement("SELECT * FROM v$version;").executeQuery();
+    if (rs.next()) {
+      // then
+      String version = rs.getString(1);
+      assertThat(version).contains("18");
+    }
+  }
 }
